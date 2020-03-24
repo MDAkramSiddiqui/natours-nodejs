@@ -2,3 +2,4 @@ node_modules
 yarn.lock
 test.js
 config.env
+dev-data/data/dev-data-control.js
