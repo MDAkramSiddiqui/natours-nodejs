@@ -1,7 +1,7 @@
 
 class ApiFeatures {
-  constructor(tourData, queryString) {
-    this.tourData = tourData;
+  constructor(query, queryString) {
+    this.query = query;
     this.queryString = queryString;
   }
 
@@ -18,7 +18,7 @@ class ApiFeatures {
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
     queryStr = JSON.parse(queryStr);
 
-    this.tourData.find(queryStr);
+    this.query.find(queryStr);
 
     return this; // this here means send this object instance so that the next function in the chain can access it
   }
@@ -30,10 +30,10 @@ class ApiFeatures {
       //url eg: /tours?sort=price,duration,etc 
       //query.sort('price duration etc');
       const sortBy = this.queryString.sort.split(',').join(' ');
-      this.tourData = this.tourData.sort(sortBy);
+      this.query = this.query.sort(sortBy);
     }else {
       //default sorting by -ve createdAt parameter so that the newest appears first
-      this.tourData = this.tourData.sort('-createdAt'); 
+      this.query = this.query.sort('-createdAt'); 
     }
 
     return this;
@@ -46,10 +46,10 @@ class ApiFeatures {
       //url eg: /tours?fields=price,duration,etc 
       //query.selection('price duration etc');
       const fieldsBy = this.queryString.fields.split(',').join(' ');
-      this.tourData = this.tourData.select(fieldsBy);
+      this.query = this.query.select(fieldsBy);
     }else {
       //removing any unnecessary fields not required by any client
-      this.tourData = this.tourData.select('-__v');
+      this.query = this.query.select('-__v');
     }
 
     return this;
@@ -62,7 +62,7 @@ class ApiFeatures {
     const skip = (page-1) * limit; // skip specifies number of results that are to be skipped to reach the speicified page 
     
     //url eg: /tours?page=3&limit=10 , page1: 1-10, page2: 11-20, page3: 21-30, skip = 20, so that we react 21-30 result
-    this.tourData = this.tourData.skip(skip).limit(limit);
+    this.query = this.query.skip(skip).limit(limit);
 
     return this;
   }

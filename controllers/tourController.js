@@ -21,7 +21,7 @@ class TourController {
         .limitFields()
         .pagination();
         // we have to return this from the previous function to use this kind of chain network
-      const tourData = await features.tourData;
+      const tourData = await features.query;
 
       return res.status(200).json({
         success: {  
@@ -81,7 +81,7 @@ class TourController {
   
   async updateTour(req, res) {
     try{
-      const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
       return res.status(200).json({
         success: {
           data: updatedTour
@@ -115,6 +115,104 @@ class TourController {
         }
       });
     }  
+  }
+
+  async getTourStats(req, res) {
+    try {
+      const stats = await Tour.aggregate([
+        {
+          $match: { ratingAverage: { $gte: 4.5 } }
+        },
+        {
+          $group: {
+            // _id: null,
+            // _id: '$difficulty',
+            _id: { $toUpper: '$difficulty' },
+            numTours: { $sum: 1 },
+            avgRating: { $avg: '$ratingAverage' },
+            avgPrice: { $avg: '$price' },
+            maxPrice: { $max: '$price' },
+            minPrice: { $min: '$price' }
+          }
+        },
+        {  
+          $sort: { avgPrice: 1 }
+        }
+        // {
+        //   //Further extending the mongo pipeline just for undetstanding that all above stages can be repeated as well
+        //   $match: { _id: { $ne: 'EASY' } }
+        // }
+      ]);
+      return res.status(200).json({
+        success: {
+          result: stats.length,
+          data: stats,
+          message: 'Aggregated Data Recieved'
+        }
+      });
+    }catch(err) {
+      return res.status(404).json({
+        failure: {
+          message: 'Some error Occured',
+          errors: err
+        }
+      });
+    }
+  }
+
+  async getMonthlyPlan(req, res) {
+    try{
+      const year = Number(req.params.year);
+      const plan = await Tour.aggregate([
+        {
+          $unwind: '$startDates'
+        },
+        {
+          $match: {
+            startDates: {
+              $gte: new Date(`${ year }-01-01`),
+              $lte: new Date(`${ year }-12-31`) 
+            }
+          }
+        },
+        {
+          $group: {
+            _id: { $month: '$startDates' },
+            numTours: { $sum: 1 },
+            tours: { $push: '$name' }
+          }
+        },
+        {
+          $addFields: { month: '$_id'}
+        },
+        {
+          $project: {
+            _id: 0 // 0 for disabling the projection of the variable _id, means it exists but not diplayed
+          }
+        },
+        {
+          $sort: { numTours: -1 } //-1 for descending order
+        },
+        {
+          $limit: 6 // limit the number that are displayed 
+        }
+      ]);
+
+      return res.status(200).json({
+        success: {
+          result: plan.length,
+          data: plan,
+          message: 'Aggregated Data Recieved'
+        }
+      });
+    }catch(err) {
+      return res.status(404).json({
+        failure: {
+          message: 'Some error Occured',
+          errors: err
+        }
+      });
+    }
   }
 }
 
