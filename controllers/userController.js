@@ -1,53 +1,57 @@
-const path = require('path');
-const fs = require('fs');
+const User = require('./../models/userModel');
+const ApiFeatures = require('./../utils/apiFeatures');
+const AppError = require('./../utils/appError');
+const catchAsync = require('./../utils/catchAsync');
 
-class userController {
-  constructor() {
-    this.usersData = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '../dev-data/data/users.json'))
-    );
-  }
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const userData = await User.find();
+  return res.status(200).json({
+    success: {
+      data: userData,
+      message: 'List of all users retrieved successfully'
+    }
+  });
+});
 
-  getAllUsers(req, res) {
-    return res.status(200).json({
-      success: {
-        data: "Router not build yet"
-      }
-    });
-  }
 
-  createUser(req, res) {
-    return res.status(200).json({
-      success: {
-        data: "Router not build yet"
-      }
-    });
-  }
+exports.createUser = catchAsync(async (req, res, next) => {
 
-  getUser(req, res) {
-    return res.status(200).json({
-      success: {
-        data: "Router not build yet"
-      }
-    });
-  }
+  return res.status(200).json({
+    success: {
+      data: null,
+      message: 'Route Not Implemented Yet'
+    }
+  });
+});
 
-  updateUser(req, res) {
-    return res.status(200).json({
-      success: {
-        data: "Router not build yet"
-      }
-    });
-  }
 
-  deleteUser(req, res) {
-    return res.status(200).json({
-      success: {
-        data: "Router not build yet"
-      }
-    });
-  }
+exports.getUser = catchAsync(async (req, res, next) => {
 
-}
+  return res.status(200).json({
+    success: {
+      data: null,
+      message: 'Route Not Implemented Yet'
+    }
+  });
+});
 
-module.exports = new userController();
+
+exports.updateUser = catchAsync(async (req, res, next) => {
+
+  return res.status(200).json({
+    success: {
+      data: null,
+      message: 'Route Not Implemented Yet'
+    }
+  });
+});
+
+exports.deleteUser = catchAsync(async (req, res, next) => {
+
+  return res.status(200).json({
+    success: {
+      data: null,
+      message: 'Route Not Implemented Yet'
+    }
+  });
+});

@@ -1,6 +1,7 @@
 const path = require('path');
 const Tour = require('./../models/tourModel');
 const ApiFeatures = require('./../utils/apiFeatures');
+const AppError = require('./../utils/appError');
 
 class TourController {
 
@@ -62,15 +63,19 @@ class TourController {
     try{
       // const tour = await Tour.findOne({ _id: req.params.id });
       const tour = await Tour.findById(req.params.id);
+      if(!tour) throw new AppError('No tour found for this ID', 404);
+      
       return res.status(200).json({
         success: {
           data: tour
         }
       });
     }catch(err) {
-      return res.status(500).json({
+      console.log(err)
+      return res.status(err.statusCode || 500).json({
         failure: {
-          errors: err
+          errors: err.message,
+          message: 'Some Error Happened'
         }
       });
     }
@@ -101,7 +106,9 @@ class TourController {
   
   async deleteTour(req, res) {
     try{
-      await Tour.findByIdAndDelete(req.params.id);
+      const tour = await Tour.findByIdAndDelete(req.params.id);
+      if(!tour) throw new AppError('No tour found for this ID', 404);
+
       return res.status(204).json({
         success: {
           data: null,
@@ -109,9 +116,10 @@ class TourController {
         }
       });
     }catch(err) {
-      return res.status(500).json({
+      return res.status(err.statusCode || 500).json({
         failure: {
-          errors: err
+          errors: err.message,
+          message: 'Something Wrong Happened'
         }
       });
     }  
