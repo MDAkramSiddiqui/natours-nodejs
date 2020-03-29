@@ -14,6 +14,11 @@ const userSchema = new Schema({
     lowercase: true
   },
   photo: String,
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user'
+  },
   password: {
     type: String,
     required: [true, 'A User Password is required'],
@@ -30,7 +35,8 @@ const userSchema = new Schema({
       },
       message: 'Password are not the same.'
     }
-  }
+  },
+  passwordChangedAt: Date
 });
 
 
@@ -47,6 +53,16 @@ userSchema.pre('save', async function(next) {
 
 //Document Instance method available to every document of this User Collection
 userSchema.methods.comparePassword = async (candidatePassword, userPassword) => bcrypt.compare(candidatePassword, userPassword);
+
+userSchema.methods.checkPasswordChangedAfter = function(jwtTimestamp) {
+  if(this.passwordChangedAt) {
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+    //if true that means password has been changed after genereting token and thus new login is required otherwise its fine
+    return changedTimestamp > jwtTimestamp;
+  }
+
+  return false;
+}
 
 
 const User = mongoose.model('User', userSchema);
