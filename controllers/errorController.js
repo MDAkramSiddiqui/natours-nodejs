@@ -24,7 +24,8 @@ module.exports = (err, req, res, next) => {
   res.status(err.statusCode).json({
     failure: {
       error: err.message,
-      message: 'Something wrong happened'
+      message: 'Something wrong happened',
+      stack: err.stack
     }
   });
 }

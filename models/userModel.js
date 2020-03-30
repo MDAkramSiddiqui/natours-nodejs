@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { Schema } = mongoose;
@@ -36,7 +37,13 @@ const userSchema = new Schema({
       message: 'Password are not the same.'
     }
   },
-  passwordChangedAt: Date
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetTokenExpires: Date,
+  active: {
+    type: Boolean,
+    default: true
+  }
 });
 
 
@@ -48,6 +55,19 @@ userSchema.pre('save', async function(next) {
 
   this.passwordConfirm = undefined; // As we no longer have the need to stored into the database and it also does not create error also setting to undefined will make it non-persistent and thus not be stored in database
 
+  next();
+});
+
+userSchema.pre('save', function(next) {
+  if(!this.isModified('password') || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+//Query Middleware
+userSchema.pre(/^find/, function(next) {
+  //This points to the current query
+  this.find({ active: { $ne: false } });
   next();
 });
 
@@ -64,6 +84,12 @@ userSchema.methods.checkPasswordChangedAfter = function(jwtTimestamp) {
   return false;
 }
 
+userSchema.methods.createPasswordResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+}
 
 const User = mongoose.model('User', userSchema);
 
