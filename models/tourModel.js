@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 // const validator = require('validator');
+// const User = require('./userModel'); // For embedding data 
 
 const { Schema } = mongoose;
 
@@ -27,8 +28,8 @@ const tourSchema = new Schema({
     type: String,
     require: [true, 'A tour difficulty is required'],
     enum: {
-      values: ['easy', 'meadium', 'difficult'],
-      message: 'A tour difficulty should be easy, medium or difficult'
+      values: ['easy', 'medium', 'difficult'],
+      message: 'A tour difficulty should be easy, medium or difficult.'
     }
   },
   ratingAverage: {
@@ -78,7 +79,37 @@ const tourSchema = new Schema({
   secretTour: {
     type: Boolean,
     default: false
-  }
+  },
+  startLocation: {
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point']
+    },
+    coordinates: [Number],
+    address: String,
+    description: String
+  },
+  locations: [
+    {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+      day: Number
+    }
+  ],
+  // guides: Array //For embedding data
+  guides: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User' // Here it automatically references it to User schemma without even requiring it
+    }
+  ]
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
@@ -96,6 +127,13 @@ tourSchema.pre('save', function(next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+//1. Embedding data example
+// tourSchema.pre('save', async function(next) {
+//   const guidesPromises = this.guides.map(async el => await User.findById(el));
+//   this.guides = await Promise.all(guidesPromises);
+//   next();
+// });
 
 // tourSchema.pre('save', function(next) {
 //   console.log('Will Save Document...');
@@ -125,6 +163,14 @@ tourSchema.pre(/^find/, function(next) {
   
   //can also add data here
   this.start = Date.now();
+  next();
+});
+
+tourSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt'
+  });
   next();
 });
 

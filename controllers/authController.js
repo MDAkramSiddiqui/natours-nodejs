@@ -91,13 +91,12 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 });
 
-exports.checkAuthority = catchAsync((req, res, next) => {
-  const AUTHORITY_ROLES = ['admin', 'lead-guide'];
-
-  if(!AUTHORITY_ROLES.includes(req.user.role)) return next(new AppError('You are not authorized to do this!', 403));
-  
-  next();
-});
+exports.restrictTo = (...roles) => {
+  return catchAsync(async (req, res, next) => {
+    if(!roles.includes(req.user.role)) return next(new AppError('You are not authorized to do this!', 403));
+    next();
+  });
+}
 
 exports.forgotPassword = catchAsync(async(req, res, next) => {
   //1. Get the user provided in the request object
