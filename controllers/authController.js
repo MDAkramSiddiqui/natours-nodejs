@@ -71,8 +71,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   }
-
-  if(!token) return next(new AppError('You are not authorized', 401));
+  if(!token) return next(new AppError('Kindly login or signup to perform this action.', 401));
 
   //2. Verify the Token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
@@ -93,7 +92,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 exports.restrictTo = (...roles) => {
   return catchAsync(async (req, res, next) => {
-    if(!roles.includes(req.user.role)) return next(new AppError('You are not authorized to do this!', 403));
+    if(!roles.includes(req.user.role)) return next(new AppError('You are not authorized to perform this action!', 403));
     next();
   });
 }
@@ -153,7 +152,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 });
 
 
-exports.updatePassword = catchAsync(async (req, res, next) => {
+exports.updateMyPassword = catchAsync(async (req, res, next) => {
   //1. Get the current user, since its already logged in so its object is already stored as req.user object
   const currentUser = await User.findById(req.user.id).select('+password');
 

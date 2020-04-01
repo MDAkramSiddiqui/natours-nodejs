@@ -36,7 +36,8 @@ const tourSchema = new Schema({
     type: Number,
     default: 4.5,
     min: [1, 'A tour minimum rating should be 1'],
-    max: [5, 'A tour maximum rating should be 5']
+    max: [5, 'A tour maximum rating should be 5'],
+    set: val => Math.round(val * 10) / 10 
   },
   ratingQuantity: {
     type: Number,
@@ -115,7 +116,12 @@ const tourSchema = new Schema({
   toObject: { virtuals: true }
 });
 
-//Vitual Properties are those that are not stored in the database as they can be calculated from the data of the database hence we can add these virtual properties so that they don't take any space in these database
+//Setting up indexes
+tourSchema.index({ price: 1, ratingAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
+//Virtual Properties are those that are not stored in the database as they can be calculated from the data of the database hence we can add these virtual properties so that they don't take any space in these database
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
@@ -188,9 +194,11 @@ tourSchema.post(/^find/, function(docs, next) {
 
 
 //AGGREGATION MIDDLEWARE
-tourSchema.pre('aggregate', function(next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  next();
-})
+// tourSchema.pre('aggregate', function(next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   next();
+// });
+
+
 
 module.exports = mongoose.model('Tour', tourSchema);

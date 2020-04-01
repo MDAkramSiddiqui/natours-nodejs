@@ -94,14 +94,14 @@ exports.deleteTour = factory.deleteOne(Tour);
 exports.getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([
     {
-      $match: { ratingsAverage: { $gte: 4.5 } }
+      $match: { ratingAverage: { $gte: 4.5 } }
     },
     {
       $group: {
         _id: { $toUpper: '$difficulty' },
         numTours: { $sum: 1 },
-        numRatings: { $sum: '$ratingsQuantity' },
-        avgRating: { $avg: '$ratingsAverage' },
+        numRatings: { $sum: '$ratingQuantity' },
+        avgRating: { $avg: '$ratingAverage' },
         avgPrice: { $avg: '$price' },
         minPrice: { $min: '$price' },
         maxPrice: { $max: '$price' }
@@ -171,6 +171,62 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
         plan
       },
       message: 'Aggregated Data Recieved'
+    }
+  });
+});
+
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlong, unit } = req.params;
+  const [ latitude, longitude ] = latlong.split(',');
+
+  if(!latitude || !longitude) next(new AppError('Please provide the latitude and longitude in the specified format, lat,long', 400));
+
+  //radians unit is required as per the documentation of mongo db which distance / radius of earth
+  const radius = unit === 'mi' ? distance/3963.2 : distance/6378.1;
+  const tourData = await Tour.find({ startLocation: { $geoWithin: { $centerSphere: [[longitude, latitude], radius] } } });
+  
+  res.status(200).json({
+    success: {
+      results: tourData.length,
+      data: tourData,
+      message: 'Tours within your specified radius obtained successfully.'
+    }
+  });
+});
+
+exports.getToursDistances = catchAsync(async (req, res, next) => {
+  const { distance, latlong, unit } = req.params;
+  const [ latitude, longitude ] = latlong.split(',');
+
+  if(!latitude || !longitude) next(new AppError('Please provide the latitude and longitude in the specified format, lat,long', 400));
+
+  const mult = unit === 'mi' ? 0.000621371 : 0.001;
+  
+  const tourData = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [longitude * 1, latitude * 1]
+        },
+        distanceField: 'distance',
+        distanceMultiplier: mult
+      }
+    }, 
+    {
+      $project: {
+        distance: 1,
+        name: 1
+      }
+    }
+  ]);
+  
+  res.status(200).json({
+    success: {
+      results: tourData.length,
+      data: tourData,
+      message: 'Tours distances has been obtained successfully.'
     }
   });
 });
