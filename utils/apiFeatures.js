@@ -55,7 +55,7 @@ class ApiFeatures {
     return this;
   }
 
-  pagination() {
+  paginate() {
     //5. Pagination
     const page = Number(this.queryString.page) || 1; // specifies the page number if multiples pages exist
     const limit = Number(this.queryString.limit) || 20; // specified the limit of our results

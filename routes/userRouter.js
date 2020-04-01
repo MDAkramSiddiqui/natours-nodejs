@@ -10,6 +10,7 @@ router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);
 router.patch('/update-password', authController.protect, authController.updatePassword);
 
+router.get('/me', authController.protect, userController.getMe, userController.getUser);
 router.patch('/update-my-account', authController.protect, userController.updateMyAccount);
 router.delete('/delete-my-account', authController.protect, userController.deleteMyAccount);
 
@@ -20,6 +21,10 @@ router.route('/')
 router.route('/:id')
   .get(userController.getUser)
   .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.deleteUser
+  );
 
 module.exports = router;

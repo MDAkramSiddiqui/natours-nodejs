@@ -1,5 +1,6 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 const filterUpdateObject = (obj, allowedFields) => {
   let newFilteredObj = {};
@@ -9,37 +10,31 @@ const filterUpdateObject = (obj, allowedFields) => {
   return newFilteredObj;
 }
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const userData = await User.find();
-  return res.status(200).json({
-    success: {
-      data: userData,
-      message: 'List of all users retrieved successfully'
-    }
-  });
-});
+// exports.getAllUsers = catchAsync(async (req, res, next) => {
+//   const userData = await User.find();
+//   return res.status(200).json({
+//     success: {
+//       result: userData.length,
+//       data: userData,
+//       message: 'List of all users retrieved successfully'
+//     }
+//   });
+// });
 
 exports.createUser = catchAsync(async (req, res, next) => {
 
-  return res.status(200).json({
-    success: {
+  return res.status(500).json({
+    failure: {
       data: null,
-      message: 'Route Not Implemented Yet'
+      message: 'Route is not implemented, so please use signup for creating user account.'
     }
   });
 });
 
-
-exports.getUser = catchAsync(async (req, res, next) => {
-
-  return res.status(200).json({
-    success: {
-      data: null,
-      message: 'Route Not Implemented Yet'
-    }
-  });
-});
-
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+}
 
 exports.updateMyAccount = catchAsync(async (req, res, next) => {
     // const currentUser = await User.findById(req.user.id); //req.user._id is same because mongoose create a virtual property called id that maps to the schema _id property automatically
@@ -69,24 +64,8 @@ exports.deleteMyAccount = catchAsync(async (req, res, next) => {
   });
 });
 
-
-
-exports.updateUser = catchAsync(async (req, res, next) => {
-  return res.status(200).json({
-    success: {
-      data: null,
-      message: 'Route Not Implemented Yet'
-    }
-  });
-});
-
-
-exports.deleteUser = catchAsync(async (req, res, next) => {
-
-  return res.status(200).json({
-    success: {
-      data: null,
-      message: 'Route Not Implemented Yet'
-    }
-  });
-});
+exports.getAllUsers = factory.getAll(User);
+exports.getUser = factory.getOne(User);
+//Do not attempt to update password here
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);

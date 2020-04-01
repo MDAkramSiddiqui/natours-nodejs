@@ -10,7 +10,8 @@ const reviewSchema = new Schema({
   rating: {
     type: Number,
     min: 1,
-    max: 5
+    max: 5,
+    required: [true, 'A tour review rating is required']
   },
   createdAt: {
     type: Date,
@@ -34,10 +35,16 @@ const reviewSchema = new Schema({
 reviewSchema.pre(/^find/, function(next) {
 
   //Caution: If I use Tour or User instead of tour or user it will not populate as we are specifying the fields that we want populate
+  // this.populate({
+  //   path: 'tour',
+  //   select: 'name'
+  // }).populate({
+  //   path: 'user',
+  //   select: 'name photo'
+  // });
+
+  //Because we do not want to create a populate chain eg. getTour will populate all its related reviews which will further populate tour and user
   this.populate({
-    path: 'tour',
-    select: 'name'
-  }).populate({
     path: 'user',
     select: 'name photo'
   });

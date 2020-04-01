@@ -120,6 +120,13 @@ tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
 
+//Setting for Virtual Populate our tour so that we can get all the reviews related to that tour and also since we want only the reviews related to single tour i.e. getTour route therefore we are populating the query in tourController and are not creating a middleware here
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id'
+});
+
 
 //DOCUMENT Middleware, can only be applied to .save() and .create() functions of mongo documents and can be call multiple times before and after the save or create
 //'save' is applicable to both save and create as well
