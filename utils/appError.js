@@ -3,9 +3,10 @@ class AppError extends Error {
     super(message);
 
     this.statusCode = statusCode;
-    this.isOperationalError = true;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    this.isOperational = true;
 
-    Error.captureStackTrace(this, this.constructor); // To prevent the constructor call to be excluded from the stackTrace of the Error and thus prevent from polluting the stackTrace
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 

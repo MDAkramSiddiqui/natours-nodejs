@@ -1,71 +1,68 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
 
-const filterUpdateObject = (obj, allowedFields) => {
-  let newFilteredObj = {};
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
   Object.keys(obj).forEach(el => {
-    if(allowedFields.includes(el)) newFilteredObj[el] = obj[el];
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
   });
-  return newFilteredObj;
-}
-
-// exports.getAllUsers = catchAsync(async (req, res, next) => {
-//   const userData = await User.find();
-//   return res.status(200).json({
-//     success: {
-//       result: userData.length,
-//       data: userData,
-//       message: 'List of all users retrieved successfully'
-//     }
-//   });
-// });
-
-exports.createUser = catchAsync(async (req, res, next) => {
-
-  return res.status(500).json({
-    failure: {
-      data: null,
-      message: 'Route is not implemented, so please use signup for creating user account.'
-    }
-  });
-});
+  return newObj;
+};
 
 exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
-}
+};
 
-exports.updateMyAccount = catchAsync(async (req, res, next) => {
-    // const currentUser = await User.findById(req.user.id); //req.user._id is same because mongoose create a virtual property called id that maps to the schema _id property automatically
-    const ALLOWED_UPDATE_FIELDS = ['name', 'email'];
-    const filteredObj = filterUpdateObject(req.body, ALLOWED_UPDATE_FIELDS);
-    const updatedCurrentUser = await User.findByIdAndUpdate(req.user.id, filteredObj, { new: true, runValidators: true });
-    console.log(filteredObj);
-  
-    return res.status(200).json({
-      success: {
-        data: updatedCurrentUser,
-        message: 'You have successfully updated your account.'
-      }
-    });
-});
+exports.updateMe = catchAsync(async (req, res, next) => {
+  // 1) Create error if user POSTs password data
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(
+      new AppError(
+        'This route is not for password updates. Please use /updateMyPassword.',
+        400
+      )
+    );
+  }
 
+  // 2) Filtered out unwanted fields names that are not allowed to be updated
+  const filteredBody = filterObj(req.body, 'name', 'email');
 
-exports.deleteMyAccount = catchAsync(async (req, res, next) => {
-  
-  await User.findByIdAndUpdate(req.user.id, { active: false });
+  // 3) Update user document
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true
+  });
 
-  return res.status(204).json({
-    success: {
-      data: null,
-      message: 'You have successfully deleted your account.'
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser
     }
   });
 });
 
-exports.getAllUsers = factory.getAll(User);
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
+
+  res.status(204).json({
+    status: 'success',
+    data: null
+  });
+});
+
+exports.createUser = (req, res) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not defined! Please use /signup instead'
+  });
+};
+
 exports.getUser = factory.getOne(User);
-//Do not attempt to update password here
+exports.getAllUsers = factory.getAll(User);
+
+// Do NOT update passwords with this!
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
