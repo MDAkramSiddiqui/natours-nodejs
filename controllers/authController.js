@@ -70,9 +70,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token = null;
   if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-  }
-  if(!token) return next(new AppError('Kindly login or signup to perform this action.', 401));
+  }else if(req.cookies.jwt) token = req.cookies.jwt;
 
+  if(!token) return next(new AppError('Kindly login or signup to perform this action.', 401));
+  
   //2. Verify the Token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 

@@ -71,16 +71,16 @@ reviewSchema.statics.calculateAverageRatings = async function(tourId) {
 
   if(stats.length > 0) {
     await Tour.findByIdAndUpdate(tourId, {
-      ratingAverage: stats[0].nRating,
-      ratingQuantity: stats[0].avgRating
+      ratingsAverage: stats[0].avgRating,
+      ratingsQuantity: stats[0].nRating
     });
   }else {
     await Tour.findByIdAndUpdate(tourId, {
-      ratingAverage: 4.5,
-      ratingQuantity: 0
+      ratingsAverage: 4.5,
+      ratingsQuantity: 0
     });
   }
-  
+
 }
 
 //next() is not available for the post option of this middleware only for pre

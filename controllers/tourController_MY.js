@@ -7,8 +7,8 @@ class TourController {
 
   async aliasTopTours(req, res, next) {
     req.query.limit = '5';
-    req.query.sort = '-ratingAverage,price';
-    req.query.fields = 'name,price,ratingAverage,summary,difficulty';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
     next();
   };
   
@@ -129,7 +129,7 @@ class TourController {
     try {
       const stats = await Tour.aggregate([
         {
-          $match: { ratingAverage: { $gte: 4.5 } }
+          $match: { ratingsAverage: { $gte: 4.5 } }
         },
         {
           $group: {
@@ -137,7 +137,7 @@ class TourController {
             // _id: '$difficulty',
             _id: { $toUpper: '$difficulty' },
             numTours: { $sum: 1 },
-            avgRating: { $avg: '$ratingAverage' },
+            avgRating: { $avg: '$ratingsAverage' },
             avgPrice: { $avg: '$price' },
             maxPrice: { $max: '$price' },
             minPrice: { $min: '$price' }

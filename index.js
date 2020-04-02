@@ -7,13 +7,17 @@ const helmet = require('helmet');
 const mognoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 const reviewRouter = require('./routes/reviewRouter');
+const viewRouter = require('./routes/viewRouter');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 const limiter = rateLimit({
   max: 100,
@@ -37,6 +41,7 @@ app.use('/api', limiter);
 
 // Body parser, reading data from req.body
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 //Data sanitization from NoSQL query injection
 /**
@@ -53,7 +58,7 @@ app.use(xss());
 
 //Preventing parameter pollution 
 app.use(hpp({
-  whitelist: ['duration', 'ratingAverage', 'ratingQuantity', 'maxGroupSize', 'difficulty', 'price']
+  whitelist: ['duration', 'ratingsAverage', 'ratingsQuantity', 'maxGroupSize', 'difficulty', 'price']
 }));
 
 //Serving Static files
@@ -62,9 +67,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 //Testing purposes
 app.use((req, res, next) => {
   req.time = new Date().toISOString();
+  console.log(req.cookies);
   next();
 });
 
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);

@@ -32,14 +32,14 @@ const tourSchema = new Schema({
       message: 'A tour difficulty should be easy, medium or difficult.'
     }
   },
-  ratingAverage: {
+  ratingsAverage: {
     type: Number,
     default: 4.5,
     min: [1, 'A tour minimum rating should be 1'],
     max: [5, 'A tour maximum rating should be 5'],
     set: val => Math.round(val * 10) / 10 
   },
-  ratingQuantity: {
+  ratingsQuantity: {
     type: Number,
     default: 0
   },
@@ -117,7 +117,7 @@ const tourSchema = new Schema({
 });
 
 //Setting up indexes
-tourSchema.index({ price: 1, ratingAverage: -1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
@@ -194,6 +194,7 @@ tourSchema.post(/^find/, function(docs, next) {
 
 
 //AGGREGATION MIDDLEWARE
+// We commented out here because it was creating problems for geoNear aggregate option which need to be operated first before any other option and since it was aggregation middleware pipeline it was executing first therefore we commented it out
 // tourSchema.pre('aggregate', function(next) {
 //   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 //   next();
