@@ -7,7 +7,9 @@ const app = require('./app');
 process.on('unhandledRejection', err => {
   console.log('Unhandled Rejection Happened, Shutting Down Server...');
   console.log(`Error Message: ${ err.message }`);
-  process.exit(1);
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
 
@@ -27,6 +29,14 @@ const server = app.listen(PORT, () => {
 process.on('uncaughtException', err => {
   console.log('Uncaught Exception Happened, Shutting Down Server...');
   console.log(`Error Message: ${ err.message }`);
-  process.exit(1);
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
+process.on('SIGTERM', () => {
+  console.log('SIGTERM Recieved, Shutting Down Server Gracefully...');
+  server.close(() => {
+    console.log('Process Terminated');
+  });
+});
