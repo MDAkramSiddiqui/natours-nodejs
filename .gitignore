@@ -3,3 +3,4 @@ yarn.lock
 test.js
 untitled-1.js
 config.env
+.cache

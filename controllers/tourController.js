@@ -27,7 +27,7 @@ exports.uploadTourImages = upload.fields([
 
 exports.resizeTourImages = catchAsync(async (req, res, next) => {
   if(!req.files || !req.files.imageCover || !req.files.images) return next();
-  console.log(req.files.images[0]);
+  // console.log(req.files.images[0]);
 
   req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
   await sharp(req.files.imageCover[0].buffer)
