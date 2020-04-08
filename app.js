@@ -25,6 +25,19 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 // 1) GLOBAL MIDDLEWARES
+
+// Implementing CORS
+app.use(cors());
+
+// When we want to allow only one website to access the api's as cross origin
+// e.g. api.natours.com to www.natours.com
+// app.use(cors({
+//   origin: 'https://www.natours.com'
+// }));
+
+app.options('*', cors());
+// app.options('/api/v1/tours/:id', cors());
+
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 
