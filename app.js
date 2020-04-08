@@ -110,3 +110,8 @@ app.all('*', (req, res, next) => {
 app.use(globalErrorHandler);
 
 module.exports = app;
+
+// Try using the following steps.
+
+// heroku config:set NODE_MODULES_CACHE=false
+// now push again with - git push heroku master
